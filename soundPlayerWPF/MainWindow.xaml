@@ -1,0 +1,123 @@
+﻿<Window x:Class="soundPlayerWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:soundPlayerWPF"
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+        xmlns:wg="clr-namespace:Microsoft.WindowsAPICodePack.Controls.WindowsForms;assembly=Microsoft.WindowsAPICodePack.Shell"
+        mc:Ignorable="d"
+        Title="MainWindow" WindowState="Maximized" Closing="Window_Closing" Icon="pic/4905248637720260d14e43f89c5d0ebb_xxo.ico">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <!--左側-->
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="2*"/>
+            </Grid.RowDefinitions>
+            <!--DataGrid-->
+            <Grid x:Name="LayoutRoot" MouseLeftButtonUp="LayoutRoot_MouseLeftButtonUp" MouseMove="LayoutRoot_MouseMove">
+                <DataGrid x:Name="dataGrid" Grid.Row="0" Margin="0" AllowDrop="True" Drop="dataGrid_Drop" DragEnter="dataGrid_DragEnter" AutoGenerateColumns="False" IsReadOnly="True" BeginningEdit="dataGrid_BeginningEdit" CellEditEnding="dataGrid_CellEditEnding" PreviewMouseLeftButtonDown="dataGrid_PreviewMouseLeftButtonDown" MouseDoubleClick="dataGrid_MouseDoubleClick">
+                    <DataGrid.Columns>
+                        <!--ヘッダーの表示-->
+                        <DataGridTextColumn Header="ID" Width="0" IsReadOnly="True" Binding="{Binding ID}" CanUserSort="False"/>
+                        <DataGridTextColumn Header="Title" Width="1*" IsReadOnly="True" Binding="{Binding Title}" CanUserSort="False"/>
+                        <DataGridTextColumn Header="Artist" Width="1*" IsReadOnly="True" Binding="{Binding Artist}" CanUserSort="False"/>
+                        <DataGridTextColumn Header="Path" Width="1*" IsReadOnly="True" Binding="{Binding FilePath}" CanUserSort="False"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <!--右クリックメニュー-->
+                        <ContextMenu>
+                            <MenuItem Name="deleteButton" Header="削除" Click="deleteButton_Click"/>
+                            <MenuItem Name="clearButton" Header="全て削除 " Click="clearButton_Click"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+            </Grid>
+            <!--DDしたときのポップアップ-->
+            <Popup x:Name="popup1" Grid.Row="0" IsHitTestVisible="False" PlacementTarget="{Binding ElementName=me}" Placement="RelativePoint" AllowsTransparency="True">
+                <Border BorderBrush="LightSteelBlue" BorderThickness="2" Background="White" Opacity="0.75">
+                    <StackPanel Orientation="Horizontal" Margin="4,3,8,3">
+                        <Image Source="/DragDropMove/Mouse-Drag.png" Width="16" Height="16" />
+                        <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding ElementName=me, Path=DraggedItem.Name}" Margin="8,0,0,0" />
+                    </StackPanel>
+                </Border>
+            </Popup>
+            <!--フォルダコントロールパネル-->
+            <DockPanel Grid.Row="1">
+                <Button x:Name="buttonFolderBack" Width="75" Content="上のフォルダへ" Click="buttonFolderBack_Click"/>
+                <Button x:Name="buttonProvidedFolder" Width="75" Content="規定のフォルダ" Click="buttonProvidedFolder_Click" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                <Button x:Name="buttonFolderProvision" Width="75" Content="登録" ToolTip="現在開いているディレクトリを規定のフォルダとして登録します" Click="buttonFolderProvision_Click" HorizontalContentAlignment="Center" HorizontalAlignment="Right" />
+            </DockPanel>
+            <!--フォルダ-->
+            <WindowsFormsHost x:Name="formsHostFoldar" Grid.Row="2">
+                <wg:ExplorerBrowser x:Name="explorerBrowser1" Load="explorerBrowser1_Load" />
+            </WindowsFormsHost>
+        </Grid>
+
+        <!--右側-->
+        <Grid x:Name="grid" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="6*"/>
+            </Grid.RowDefinitions>
+            <!--コントロールパネル-->
+            <DockPanel x:Name="ParentalStack" VerticalAlignment="Center">
+                <Button x:Name="buttonBack" Content="◀" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="5,0,0,0"/>
+                <Button x:Name="buttonPlay" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="5,0,0,0" Click="buttonPlay_Click" IsEnabled="False"/>
+                <Button x:Name="buttonPause" Content="Pause" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="5,0,0,0" Click="buttonPause_Click" IsEnabled="False"/>
+                <Button x:Name="buttonStop" Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="5,0,0,0" Click="buttonStop_Click" IsEnabled="False"/>
+                <Button x:Name="buttonNext" Content="▶" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="5,0,0,0"/>
+                <Slider x:Name="sliderVol" Margin="10,0" ValueChanged="sliderVol_ValueChanged" Maximum="100" Value="50"/>
+            </DockPanel>
+            <!--時間、ポジションバー-->
+            <DockPanel Grid.Row="1">
+                <Label x:Name="labelNowTime" Width="101" Content="00:00:00 / 00:00:00" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" HorizontalContentAlignment="Center" Margin="5,18,0,17"/>
+                <Slider x:Name="sliderPos" VerticalAlignment="Center" Margin="10,0" ValueChanged="sliderPos_ValueChanged" IsMoveToPointEnabled="True" IsManipulationEnabled="True" Maximum="1000" LargeChange="10" SmallChange="1" PreviewMouseLeftButtonDown="sliderPos_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="sliderPos_PreviewMouseLeftButtonUp"/>
+            </DockPanel>
+            <!--スペクトラム表示-->
+            <WindowsFormsHost x:Name="formsHostPic" Grid.Row="2" Margin="0">
+                <WindowsFormsHost.Background>
+                    <ImageBrush/>
+                </WindowsFormsHost.Background>
+                <wf:PictureBox x:Name="pictureBox1" Enabled="True"/>
+            </WindowsFormsHost>
+            <!--LP-->
+            <Grid x:Name="LP" Grid.Row="3">
+                <Grid.Background>
+                    <ImageBrush ImageSource="/pic/wood.jpg"/>
+                </Grid.Background>
+                <Image x:Name="picArm" Source="/pic/arm.png" Margin="164,42,-164,114" RenderTransformOrigin="0.5,0.5" Panel.ZIndex="3" Width="Auto" VerticalAlignment="Center">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="0.5" ScaleY="0.5"/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="310"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+                <Grid x:Name="picMove" Margin="0,20" Panel.ZIndex="1">
+                    <Image x:Name="imageLP" Margin="0,10" Panel.ZIndex="2" Source="/pic/LP1.png" />
+                    <StackPanel Panel.ZIndex="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Label x:Name="labelTitle" Content="Label1" Margin="0" Background="{x:Null}" Panel.ZIndex="4" FontSize="7" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                        <Label x:Name="labelArtist" Content="Label2" Margin="0" Panel.ZIndex="4" Background="{x:Null}" FontSize="7" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+
+        </Grid>
+
+
+
+    </Grid>
+</Window>
